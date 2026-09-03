@@ -92,13 +92,23 @@ class myWebpage:
 
         return output
 
-    # TODO: Check if a username already exists
-    # TODO: Check if the employee ID is valid
     def PUTemployees(self, id):
         conn = sqlite3.connect('Challenge_DB.db')
         cursor = conn.cursor()
 
         data = request.get_json()
+
+        currentUsernames = jsonify(cursor.execute("SELECT username FROM employees").fetchall()).json
+        for name in currentUsernames:
+            if data['username'] == name[0]:
+                output = f"Unprocessable content. Username {data['username']} is already in use"
+                return jsonify(output), 422
+
+        checkEmployee = cursor.execute("SELECT * FROM employees WHERE id = ?", (id,))
+
+        if jsonify(checkEmployee.fetchall()) != []:
+            output = f"Unprocessable content. ID {id} is not a valid employee ID"
+            return jsonify(output), 422
 
         cursor.execute("UPDATE employees SET username = (?) WHERE id = ?", (data['username'], id))
         conn.commit()
@@ -116,11 +126,19 @@ class myWebpage:
 
         checkEmployee = cursor.execute("SELECT * FROM employees WHERE id = ?", (id,))
 
-        if jsonify(checkEmployee.fetchall()) != []:
+        if jsonify(checkEmployee.fetchall()).json != []:
              cursor.execute("DELETE FROM employees WHERE id = ?", (id,))
              conn.commit()
         else:
-             return f"Error 422. Unprocessable content. ID {id} is not a valid employee ID"
+            output = f"Unprocessable content. ID {id} is not a valid employee ID"
+            return jsonify(output), 422
+
+        employees = cursor.execute("SELECT * FROM employees;")
+        output = jsonify(employees.fetchall())
+        cursor.close()
+        conn.close()
+        
+        return output
         
     def run(self, debug=False):
             self.app.run(host=self.host, port=self.port, debug=debug)
