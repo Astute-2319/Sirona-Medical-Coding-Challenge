@@ -14,6 +14,7 @@ class myWebpage:
             self.app.add_url_rule("/cases", "cases", self.cases, methods=["GET"])
             self.app.add_url_rule("/cases/<int:id>", "casesID", self.casesID, methods=["GET"])
             self.app.add_url_rule("/cases/<int:id>/claim", "claimCase", self.claimCase, methods=["POST"])
+            self.app.add_url_rule("/cases/<int:id>/report", "caseReport", self.caseReport, methods=["POST"])
             self.app.add_url_rule("/employees", "GETemployees", self.GETemployees, methods=["GET"])
             self.app.add_url_rule("/employees", "POSTemployees", self.POSTemployees, methods=["POST"])
             self.app.add_url_rule("/employees/<int:id>", "PUTemployees", self.PUTemployees, methods=["PUT"])
@@ -71,31 +72,80 @@ class myWebpage:
         cursor = conn.cursor()
 
         try:
-                data = request.get_json()
+            data = request.get_json()
         except Exception:
-                return jsonify("Unsupported media type. Input format is not supported or data is missing"), 415
+            return jsonify("Unsupported media type. Input format is not supported or data is missing"), 415
 
         if not data or not data.get('username'):
-                return jsonify("Unsupported media type. Username cannot be empty"), 415
+            return jsonify("Unsupported media type. Username cannot be empty"), 415
 
         cursor.execute("SELECT username FROM employees")
         currentUsernames = [row[0] for row in cursor.fetchall()]
 
         if data['username'] not in currentUsernames:
-                return jsonify("That is not a valid employee username"), 415
+            return jsonify("That is not a valid employee username"), 415
 
         cursor.execute("SELECT status FROM cases WHERE id = ?", (int(id),))
         row = cursor.fetchone()
 
         if row is None:
-                return jsonify("Case not found"), 404
+            return jsonify("Case not found"), 404
 
         if row[0] != 'PENDING':
-                return jsonify("Case is not currently pending review"), 422
+            return jsonify("Case is not currently pending review"), 422
 
         cursor.execute(
-                "UPDATE cases SET status = 'IN_PROGRESS', claimedBy = ?, claimedAt = datetime('now') WHERE id = ?",
-                (data['username'], int(id))
+            "UPDATE cases SET status = 'IN_PROGRESS', claimedBy = ?, claimedAt = datetime('now') WHERE id = ?",
+            (data['username'], int(id))
+        )
+        conn.commit()
+
+        cursor.execute("SELECT * FROM cases WHERE id = ?", (int(id),))
+        updated = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(updated)
+
+    def caseReport(self, id):
+        conn = sqlite3.connect('Challenge_DB.db')
+        cursor = conn.cursor()
+
+        try:
+            data = request.get_json()
+        except Exception:
+            return jsonify("Unsupported media type. Input format is not supported or data is missing"), 415
+
+        if not data or not data.get('author'):
+            return jsonify("Unsupported media type. Author cannot be empty"), 415
+
+        if not data or not data.get('report'):
+            return jsonify("Unsupported media type. Report body cannot be empty"), 415
+
+        cursor.execute("SELECT username FROM employees")
+        currentUsernames = [row[0] for row in cursor.fetchall()]
+
+        if data['author'] not in currentUsernames:
+            return jsonify("Unsupported media type. That is not a valid employee username"), 415
+
+        cursor.execute("SELECT claimedBy FROM cases WHERE id = ?", (id,))
+        userClaim = [row[0] for row in cursor.fetchall()]
+        if data['author'] not in userClaim:
+                return jsonify("Unsupported media type. This user did not claim this case"), 415
+
+        cursor.execute("SELECT status FROM cases WHERE id = ?", (int(id),))
+        row = cursor.fetchone()
+
+        if row is None:
+            return jsonify("Case not found"), 404
+
+        if row[0] != 'IN_PROGRESS':
+            return jsonify("Case is not currently in progress"), 422
+
+        cursor.execute(
+                "UPDATE cases SET status = 'COMPLETED', report = ? WHERE id = ?",
+                (data['report'], int(id))
         )
         conn.commit()
 
