@@ -96,7 +96,15 @@ class myWebpage:
         conn = sqlite3.connect('Challenge_DB.db')
         cursor = conn.cursor()
 
-        data = request.get_json()
+        try:
+            data = request.get_json()
+        except:
+            output = f"Unsupported media type. Input format is not supported or data is missing"
+            return jsonify(output), 415
+
+        if data['username'] == '':
+            output = f"Unsupported media type. Username cannot be empty"
+            return jsonify(output), 415
 
         currentUsernames = jsonify(cursor.execute("SELECT username FROM employees").fetchall()).json
         for name in currentUsernames:
