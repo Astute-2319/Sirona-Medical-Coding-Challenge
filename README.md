@@ -18,4 +18,3 @@ Assumption: All IDs will be integers, just to keep things simple. Makes auto inc
 Q: Should DELETE completely remove data from the database or should it just mark it as no longer valid?
 
 Assumption: I completely removed the data from the database for simplicity. In an actual work scenario, I would likely label the data as deleted so it cannot be accessed normally, but is still saved. This way if an employee is deleted, the cases they have worked on in the past are not corrupted.
-

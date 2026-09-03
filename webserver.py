@@ -67,6 +67,8 @@ class myWebpage:
         else:
             return output
 
+    # Claim a case based on its ID and the username of the employee claiming it. 
+    # This will transition the case from PENDING to IN_PROGRESS
     def claimCase(self, id):
         conn = sqlite3.connect('Challenge_DB.db')
         cursor = conn.cursor()
@@ -108,6 +110,8 @@ class myWebpage:
 
         return jsonify(updated)
 
+    # Submit a report on a case based on its ID and the username of the employee submitting the report. 
+    # This will transition the case from IN_PROGRESS to COMPLETED
     def caseReport(self, id):
         conn = sqlite3.connect('Challenge_DB.db')
         cursor = conn.cursor()
@@ -157,6 +161,7 @@ class myWebpage:
 
         return jsonify(updated)
 
+    # Returns a list of all employees in the database
     def GETemployees(self):
         conn = sqlite3.connect('Challenge_DB.db')
         cursor = conn.cursor()
@@ -166,6 +171,7 @@ class myWebpage:
 
         return output
 
+    # Add a new employee to the database based on the provided username
     def POSTemployees(self):
         conn = sqlite3.connect('Challenge_DB.db')
         cursor = conn.cursor()
@@ -183,6 +189,7 @@ class myWebpage:
 
         return output
 
+    # Update an existing employee's username based on their ID and the new username provided
     def PUTemployees(self, id):
         conn = sqlite3.connect('Challenge_DB.db')
         cursor = conn.cursor()
@@ -219,6 +226,7 @@ class myWebpage:
 
         return output
 
+    # Delete an existing employee from the database based on their ID
     def DELETEemployees(self, id):
         conn = sqlite3.connect('Challenge_DB.db')
         cursor = conn.cursor()
@@ -238,7 +246,8 @@ class myWebpage:
         conn.close()
         
         return output
-        
+
+    # Run the server on the specified host and port, with optional debug mode
     def run(self, debug=False):
             self.app.run(host=self.host, port=self.port, debug=debug)
 
