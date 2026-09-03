@@ -13,7 +13,8 @@ class myWebpage:
             self.app.add_url_rule("/", "main", self.main, methods=["GET"])
             self.app.add_url_rule("/cases", "cases", self.cases, methods=["GET"])
             self.app.add_url_rule("/cases/<int:id>", "casesID", self.casesID, methods=["GET"])
-            self.app.add_url_rule("/employees", "employees", self.employees, methods=["GET"])
+            self.app.add_url_rule("/employees", "GETemployees", self.GETemployees, methods=["GET"])
+            self.app.add_url_rule("/employees", "POSTemployees", self.POSTemployees, methods=["POST"])
 
     def main(self):
            return "This is the main page"
@@ -63,12 +64,29 @@ class myWebpage:
         else:
             return output
 
-    def employees(self):
+    def GETemployees(self):
         conn = sqlite3.connect('Challenge_DB.db')
         cursor = conn.cursor()
 
         employees = cursor.execute("SELECT * FROM employees;")
         output = jsonify(employees.fetchall())
+
+        return output
+
+    def POSTemployees(self):
+        conn = sqlite3.connect('Challenge_DB.db')
+        cursor = conn.cursor()
+
+        data = request.get_json()
+
+        cursor.execute("INSERT INTO employees (username) VALUES (?)", (data['username'],))
+
+        conn.commit()
+
+        employees = cursor.execute("SELECT * FROM employees;")
+        output = jsonify(employees.fetchall())
+        cursor.close()
+        conn.close()
 
         return output
 
