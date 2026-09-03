@@ -18,6 +18,7 @@ class myWebpage:
            return "This is the main page"
 
     # Returns a list of all cases that match the filter criteria
+    # Ex: http://127.0.0.1:5000/cases?status=IN_PROGRESS&claimedBy=mpeters
     def cases(self):
         status = request.args.get('status')
         claimedBy = request.args.get('claimedBy')
@@ -46,7 +47,7 @@ class myWebpage:
         return output
 
     # Return an entire case based on its ID alone
-    # http://127.0.0.1:5000/cases/1
+    # Ex: http://127.0.0.1:5000/cases/1
     def casesID(self, id):
         conn = sqlite3.connect('Challenge_DB.db')
         cursor = conn.cursor()
