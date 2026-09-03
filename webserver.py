@@ -16,6 +16,7 @@ class myWebpage:
             self.app.add_url_rule("/employees", "GETemployees", self.GETemployees, methods=["GET"])
             self.app.add_url_rule("/employees", "POSTemployees", self.POSTemployees, methods=["POST"])
             self.app.add_url_rule("/employees/<int:id>", "PUTemployees", self.PUTemployees, methods=["PUT"])
+            self.app.add_url_rule("/employees/<int:id>", "DELETEemployees", self.DELETEemployees, methods=["DELETE"])
 
     def main(self):
            return "This is the main page"
@@ -61,7 +62,7 @@ class myWebpage:
         print(output.json)
 
         if output.json == []:
-             return "Error 404. Case not found."
+            return "Error 404. Case not found."
         else:
             return output
 
@@ -91,6 +92,8 @@ class myWebpage:
 
         return output
 
+    # TODO: Check if a username already exists
+    # TODO: Check if the employee ID is valid
     def PUTemployees(self, id):
         conn = sqlite3.connect('Challenge_DB.db')
         cursor = conn.cursor()
@@ -107,6 +110,18 @@ class myWebpage:
 
         return output
 
+    def DELETEemployees(self, id):
+        conn = sqlite3.connect('Challenge_DB.db')
+        cursor = conn.cursor()
+
+        checkEmployee = cursor.execute("SELECT * FROM employees WHERE id = ?", (id,))
+
+        if jsonify(checkEmployee.fetchall()) != []:
+             cursor.execute("DELETE FROM employees WHERE id = ?", (id,))
+             conn.commit()
+        else:
+             return f"Error 422. Unprocessable content. ID {id} is not a valid employee ID"
+        
     def run(self, debug=False):
             self.app.run(host=self.host, port=self.port, debug=debug)
 
