@@ -12,10 +12,12 @@ class myWebpage:
             # Use add_url_rule instead of @app.route decorator
             self.app.add_url_rule("/", "main", self.main, methods=["GET"])
             self.app.add_url_rule("/cases", "cases", self.cases, methods=["GET"])
+            self.app.add_url_rule("/cases/<int:id>", "casesID", self.casesID, methods=["GET"])
 
     def main(self):
            return "This is the main page"
 
+    # Returns a list of all cases that match the filter criteria
     def cases(self):
         status = request.args.get('status')
         claimedBy = request.args.get('claimedBy')
@@ -41,6 +43,17 @@ class myWebpage:
 
         cursor.close()
         conn.close()
+        return output
+
+    # Return an entire case based on its ID alone
+    # http://127.0.0.1:5000/cases/1
+    def casesID(self, id):
+        conn = sqlite3.connect('Challenge_DB.db')
+        cursor = conn.cursor()
+
+        cases = cursor.execute("SELECT * FROM cases WHERE id = ?", (int(id),))
+        output = jsonify(cases.fetchall())
+
         return output
 
     def run(self, debug=False):
