@@ -54,7 +54,12 @@ class myWebpage:
         cases = cursor.execute("SELECT * FROM cases WHERE id = ?", (int(id),))
         output = jsonify(cases.fetchall())
 
-        return output
+        print(output.json)
+
+        if output.json == []:
+             return "Error 404. Case not found."
+        else:
+            return output
 
     def run(self, debug=False):
             self.app.run(host=self.host, port=self.port, debug=debug)
