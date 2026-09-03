@@ -13,6 +13,7 @@ class myWebpage:
             self.app.add_url_rule("/", "main", self.main, methods=["GET"])
             self.app.add_url_rule("/cases", "cases", self.cases, methods=["GET"])
             self.app.add_url_rule("/cases/<int:id>", "casesID", self.casesID, methods=["GET"])
+            self.app.add_url_rule("/employees", "employees", self.employees, methods=["GET"])
 
     def main(self):
            return "This is the main page"
@@ -61,6 +62,15 @@ class myWebpage:
              return "Error 404. Case not found."
         else:
             return output
+
+    def employees(self):
+        conn = sqlite3.connect('Challenge_DB.db')
+        cursor = conn.cursor()
+
+        employees = cursor.execute("SELECT * FROM employees;")
+        output = jsonify(employees.fetchall())
+
+        return output
 
     def run(self, debug=False):
             self.app.run(host=self.host, port=self.port, debug=debug)
