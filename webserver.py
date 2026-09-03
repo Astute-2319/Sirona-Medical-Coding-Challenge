@@ -15,6 +15,7 @@ class myWebpage:
             self.app.add_url_rule("/cases/<int:id>", "casesID", self.casesID, methods=["GET"])
             self.app.add_url_rule("/employees", "GETemployees", self.GETemployees, methods=["GET"])
             self.app.add_url_rule("/employees", "POSTemployees", self.POSTemployees, methods=["POST"])
+            self.app.add_url_rule("/employees/<int:id>", "PUTemployees", self.PUTemployees, methods=["PUT"])
 
     def main(self):
            return "This is the main page"
@@ -81,6 +82,22 @@ class myWebpage:
 
         cursor.execute("INSERT INTO employees (username) VALUES (?)", (data['username'],))
 
+        conn.commit()
+
+        employees = cursor.execute("SELECT * FROM employees;")
+        output = jsonify(employees.fetchall())
+        cursor.close()
+        conn.close()
+
+        return output
+
+    def PUTemployees(self, id):
+        conn = sqlite3.connect('Challenge_DB.db')
+        cursor = conn.cursor()
+
+        data = request.get_json()
+
+        cursor.execute("UPDATE employees SET username = (?) WHERE id = ?", (data['username'], id))
         conn.commit()
 
         employees = cursor.execute("SELECT * FROM employees;")
